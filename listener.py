@@ -24,11 +24,16 @@ class Listener:
     
     def execute_commands(self, command):
         self.safe_send(command)
+        if command[0] == "exit":
+            self.connection.close()
+            exit()
+
         return self.safe_receive()
     
     def run(self):
         while True:
             command = input(">> ")
+            command = command.split(" ")
             command_result = self.execute_commands(command)
             print(command_result)
 
